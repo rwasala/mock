@@ -9,19 +9,6 @@ app.listen(mockPort, function () {
     log('Mock is running on port ' + mockPort)
 });
 
-app.get('*', function (req, res) {
-    log('GET ' + req.url);
-    const data = mockData['GET'+req.url];
-    if (data) {
-        addHeaders(res, data.headers);
-        sleep(data.latency);
-        res.status(data.status).send(data.body);
-    }
-    else {
-        res.status(501).send("URL not mocked");
-    }
-});
-
 app.post('/mock', function(req, res) {
     const method = req.body['method'];
     const path = req.body['path'];
@@ -48,6 +35,26 @@ app.post('/mock', function(req, res) {
     res.status(200).send({});   
 });
 
+app.get('*', function (req, res) {
+    sendResponse(req, res)
+});
+
+app.post('*', function (req, res) {
+    sendResponse(req, res)
+});
+
+app.delete('*', function (req, res) {
+    sendResponse(req, res)
+});
+
+app.put('*', function (req, res) {
+    sendResponse(req, res)
+});
+
+app.patch('*', function (req, res) {
+    sendResponse(req, res)
+});
+
 function sleep(timeInMs) {
     var waitTill = new Date(new Date().getTime() + timeInMs);
     while(waitTill > new Date()) {}
@@ -70,5 +77,18 @@ function addHeaders(res, headersArray) {
         headersArray.forEach(function(header) {
             res.set(header.key, header.value)
         });
+    }
+}
+
+function sendResponse(req, res) {
+    log(req.method + ' ' + req.url);
+    const data = mockData[req.method+req.url];
+    if (data) {
+        addHeaders(res, data.headers);
+        sleep(data.latency);
+        res.status(data.status).send(data.body);
+    }
+    else {
+        res.status(501).send("URL not mocked");
     }
 }
