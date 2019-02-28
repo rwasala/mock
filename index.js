@@ -64,10 +64,9 @@ app.patch('*', function (req, res) {
     sendResponse(req, res)
 });
 
-function sleep(timeInMs) {
-    var waitTill = new Date(new Date().getTime() + timeInMs);
-    while(waitTill > new Date()) {}
-}
+const sleep = (milliseconds) => {
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
+}  
 
 function getPortNumber(port) {
     if (port && Number.isInteger(Number(port)) && port > 0) {
@@ -105,8 +104,9 @@ function sendResponse(req, res) {
         const data = mockData[key];
         if (data) {
             addHeaders(res, data.headers);
-            sleep(data.latency);
-            res.status(data.status).send(data.body);
+            sleep(data.latency).then(() => {
+                res.status(data.status).send(data.body);
+            });
         }
         else {
             res.status(501).send("URL not mocked");
