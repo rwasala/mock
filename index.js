@@ -5,7 +5,6 @@ const app = express();
 app.use(bodyParser.json())
 app.use(cors());
 app.disable('etag');
-
 const mockData = {};
 
 const mockPort = getPortNumber(process.argv[2])
@@ -38,7 +37,7 @@ app.post('/mock', function(req, res) {
                 body: request['body']
             };    
         });   
-        
+
         res.status(200).send({});  
     }
 
@@ -92,13 +91,28 @@ function addHeaders(res, headersArray) {
 
 function sendResponse(req, res) {
     log(req.method + ' ' + req.url);
-    const data = mockData[req.method+req.url];
-    if (data) {
-        addHeaders(res, data.headers);
-        sleep(data.latency);
-        res.status(data.status).send(data.body);
+    const regexps = Object.keys(mockData);
+    let key = '';
+    if (regexps.length > 0) {
+        regexps.forEach(function(regexp) {
+            var re = new RegExp(regexp);
+            if ((req.method+req.url).match(re)) {
+                key = regexp
+                return;
+            }
+        });
+
+        const data = mockData[key];
+        if (data) {
+            addHeaders(res, data.headers);
+            sleep(data.latency);
+            res.status(data.status).send(data.body);
+        }
+        else {
+            res.status(501).send("URL not mocked");
+        }
     }
     else {
-        res.status(501).send("URL not mocked");
-    }
+        res.status(501).send("Mock not initialized");
+    }   
 }
