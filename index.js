@@ -14,29 +14,35 @@ app.listen(mockPort, function () {
 });
 
 app.post('/mock', function(req, res) {
-    const method = req.body['method'];
-    const path = req.body['path'];
-    const status = req.body['status'];
-    const latency = req.body['latency'];
-    let statusForMock = 200;
-    let latencyForMock = 0;
-
-    if (status && Number.isInteger(Number(status)) && status > 99 && status < 600) {
-        statusForMock = status;
+    if (Array.isArray(req.body)) {
+        req.body.forEach(function(request) {
+            const method = request['method'];
+            const path = request['path'];
+            const status = request['status'];
+            const latency = request['latency'];
+            let statusForMock = 200;
+            let latencyForMock = 0;
+        
+            if (status && Number.isInteger(Number(status)) && status > 99 && status < 600) {
+                statusForMock = status;
+            }
+            
+            if (latency && Number.isInteger(Number(latency)) && latency > 0) {
+                latencyForMock = latency;
+            }
+        
+            mockData[method+path] = {
+                status: statusForMock,
+                latency: latencyForMock,
+                headers: request['headers'] || [],
+                body: request['body']
+            };    
+        });   
+        
+        res.status(200).send({});  
     }
-    
-    if (latency && Number.isInteger(Number(latency)) && latency > 0) {
-        latencyForMock = latency;
-    }
 
-    mockData[method+path] = {
-        status: statusForMock,
-        latency: latencyForMock,
-        headers: req.body['headers'] || [],
-        body: req.body['body']
-    };
-
-    res.status(200).send({});   
+    res.status(400).send();
 });
 
 app.get('*', function (req, res) {
