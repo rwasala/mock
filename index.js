@@ -1,24 +1,24 @@
 const express = require('express');
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
 const cors = require('cors');
 const app = express();
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 app.use(cors());
 app.disable('etag');
 const mockData = {};
 
-const mockPort = getPortNumber(process.argv[2])
+const mockPort = getPortNumber(process.argv[2]);
 app.listen(mockPort, function () {
-    log('Mock is running on port ' + mockPort)
+    log('Mock is running on port ' + mockPort);
 });
 
 app.post('/mock', function(req, res) {
     if (Array.isArray(req.body)) {
         req.body.forEach(function(request) {
-            const method = request['method'];
-            const path = request['path'];
-            const status = request['status'];
-            const latency = request['latency'];
+            const method = request.method;
+            const path = request.path;
+            const status = request.status;
+            const latency = request.latency;
             let statusForMock = 200;
             let latencyForMock = 0;
         
@@ -33,8 +33,8 @@ app.post('/mock', function(req, res) {
             mockData[method+path] = {
                 status: statusForMock,
                 latency: latencyForMock,
-                headers: request['headers'] || [],
-                body: request['body']
+                headers: request.headers || [],
+                body: request.body
             };    
         });   
 
@@ -45,28 +45,28 @@ app.post('/mock', function(req, res) {
 });
 
 app.get('*', function (req, res) {
-    sendResponse(req, res)
+    sendResponse(req, res);
 });
 
 app.post('*', function (req, res) {
-    sendResponse(req, res)
+    sendResponse(req, res);
 });
 
 app.delete('*', function (req, res) {
-    sendResponse(req, res)
+    sendResponse(req, res);
 });
 
 app.put('*', function (req, res) {
-    sendResponse(req, res)
+    sendResponse(req, res);
 });
 
 app.patch('*', function (req, res) {
-    sendResponse(req, res)
+    sendResponse(req, res);
 });
 
 const sleep = (milliseconds) => {
-    return new Promise(resolve => setTimeout(resolve, milliseconds))
-}  
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+};
 
 function getPortNumber(port) {
     if (port && Number.isInteger(Number(port)) && port > 0) {
@@ -83,7 +83,7 @@ function log(text) {
 function addHeaders(res, headersArray) {
     if (Array.isArray(headersArray)) {
         headersArray.forEach(function(header) {
-            res.set(header.key, header.value)
+            res.set(header.key, header.value);
         });
     }
 }
@@ -96,7 +96,7 @@ function sendResponse(req, res) {
         regexps.forEach(function(regexp) {
             var re = new RegExp(regexp);
             if ((req.method+req.url).match(re)) {
-                key = regexp
+                key = regexp;
                 return;
             }
         });
